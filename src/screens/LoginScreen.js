@@ -1,10 +1,47 @@
 // src/screens/LoginScreen.js
+import React, { useState, useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons'; // Certifique-se de instalar @expo/vector-icons
-import { ImageBackground, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
 import CustomButton from '../components/CustomButton';
 
+const API_URL = 'https://example.com'; // Altere para sua URL de API
 
 const LoginScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const validate = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      Alert.alert('Erro', 'Informe um e-mail válido.');
+      return false;
+    }
+    if (!password || password.length < 6) {
+      Alert.alert('Erro', 'A senha deve ter ao menos 6 caracteres.');
+      return false;
+    }
+    return true;
+  };
+
+  const { signIn } = useContext(AuthContext);
+
+  const handleLogin = async () => {
+    if (!validate()) return;
+    setLoading(true);
+    try {
+      const data = await signIn(email, password);
+      if (data && data.token) {
+        navigation.navigate('MainApp');
+      }
+    } catch (error) {
+      Alert.alert('Erro', error.message || 'Falha ao autenticar.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ImageBackground
       // ADICIONE SUA IMAGEM DE FUNDO AQUI
@@ -21,6 +58,8 @@ const LoginScreen = ({ navigation }) => {
                 style={styles.input}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
             />
 
             <Text style={styles.label}>Senha</Text>
@@ -28,6 +67,8 @@ const LoginScreen = ({ navigation }) => {
                 <TextInput
                     style={styles.inputPassword}
                     secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
                 />
                 <TouchableOpacity style={styles.eyeIcon}>
                     <Ionicons name="eye-outline" size={24} color="#888" />
@@ -39,11 +80,15 @@ const LoginScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <View style={{marginTop: 30, width: '100%'}}>
-              <CustomButton
-                  title="Entrar"
-                  onPress={() => navigation.navigate('MainApp')}
-                  type="secondary"
-              />
+              {loading ? (
+                <ActivityIndicator size="large" color="#000" />
+              ) : (
+                <CustomButton
+                    title="Entrar"
+                    onPress={handleLogin}
+                    type="secondary"
+                />
+              )}
             </View>
         </View>
     </ImageBackground>

@@ -1,0 +1,46 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Demo User",
+      "email": "test@demo.com",
+      "password": "password123"
+    },
+    {
+      "id": 2,
+      "name": "Auto Test Debug",
+      "email": "autodebug@demo.com",
+      "password": "password123"
+    },
+    {
+      "id": 3,
+      "name": "Meu Teste",
+      "email": "meu@teste.com",
+      "password": "senha123"
+    },
+    {
+      "id": 4,
+      "name": "Novo Usuário",
+      "email": "novo@demo.com",
+      "password": "password123"
+    },
+    {
+      "id": 5,
+      "name": "Teste Novo Cadastro",
+      "email": "novoteste@exemplo.com",
+      "password": "minhasenha123"
+    },
+    {
+      "id": 6,
+      "name": "kaio",
+      "email": "kaiomarciosol@gmail.com",
+      "password": "kaio2918"
+    },
+    {
+      "id": 7,
+      "name": "kaio",
+      "email": "fffeliz@hotmail.com",
+      "password": "kaio298"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
+import { AuthProvider } from './src/context/AuthContext';
 import { ImageBackground, View } from 'react-native';
 
 // Importe o botão customizado (verifique o caminho)
@@ -123,7 +124,8 @@ const Stack = createStackNavigator();
 function App() {
   return (
     // Removido o <NavigationContainer> daqui, pois o Expo Router cuida disso
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <AuthProvider>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
       {/* Telas de Autenticação (Cliente e Loja) */}
       <Stack.Screen name="Initial" component={InitialScreen} />
       
@@ -149,6 +151,7 @@ function App() {
       <Stack.Screen name="LojaServicoNovo" component={LojaServicoNovoScreen} />
 
     </Stack.Navigator>
+    </AuthProvider>
   );
 }
 
