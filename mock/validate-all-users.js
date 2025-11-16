@@ -5,7 +5,7 @@ const path = require('path');
 const dbPath = path.join(__dirname, 'db.json');
 const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
 
-const BASE_URL = process.env.MOCK_URL || 'http://localhost:3005';
+const BASE_URL = process.env.MOCK_URL || 'http://localhost:3001';
 
 async function validateUser(user) {
   try {
