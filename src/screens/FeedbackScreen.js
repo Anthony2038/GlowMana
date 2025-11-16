@@ -1,23 +1,15 @@
 // src/screens/FeedbackScreen.js
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState, useEffect, useContext } from 'react';
 import {
   FlatList,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
-  Modal,
-  Alert,
-  ActivityIndicator,
-  ScrollView
+  View
 } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
-import feedbackService from '../services/feedback';
 
 // Componente de Cabeçalho (padrão do app)
 const AppHeader = ({ navigation }) => (
@@ -37,28 +29,6 @@ const AppHeader = ({ navigation }) => (
     </TouchableOpacity>
   </LinearGradient>
 );
-
-// Componente de Seletor de Estrelas
-const StarRating = ({ rating, onRatingChange, editable = false }) => {
-  return (
-    <View style={styles.starsContainer}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <TouchableOpacity
-          key={star}
-          onPress={() => editable && onRatingChange(star)}
-          disabled={!editable}
-        >
-          <Ionicons
-            name={star <= rating ? 'star' : 'star-outline'}
-            size={36}
-            color="#FFD700"
-            style={{ marginHorizontal: 4 }}
-          />
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-};
 
 // Dados de exemplo
 const feedbacks = [
@@ -86,179 +56,41 @@ const feedbacks = [
 ];
 
 // Componente do Card de Feedback
-const FeedbackCard = ({ item }) => {
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-  };
-
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Ionicons name="person-circle" size={40} color="white" />
-        <Text style={styles.cardName}>{item.userName}</Text>
-      </View>
-      <Text style={styles.cardComment}>{item.comment}</Text>
-      <View style={styles.cardFooter}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name="star" size={18} color="#FFD700" />
-          <Text style={styles.cardRating}>{item.rating}/5</Text>
-        </View>
-        <Text style={styles.cardDate}>{formatDate(item.date)}</Text>
-      </View>
+const FeedbackCard = ({ item }) => (
+  <View style={styles.card}>
+    <View style={styles.cardHeader}>
+      <Ionicons name="person-circle" size={40} color="white" />
+      <Text style={styles.cardName}>{item.nome}</Text>
     </View>
-  );
-};
+    <Text style={styles.cardComment}>{item.comentario}</Text>
+    <View style={styles.cardFooter}>
+      <Ionicons name="star" size={18} color="#FFD700" />
+      <Text style={styles.cardRating}>{item.rating}/5</Text>
+      <Text style={styles.cardDate}>{item.data}</Text>
+    </View>
+  </View>
+);
 
 export default function FeedbackScreen({ navigation }) {
-  const { user } = useContext(AuthContext);
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    loadFeedbacks();
-  }, []);
-
-  const loadFeedbacks = async () => {
-    try {
-      setLoading(true);
-      const data = await feedbackService.getFeedbacks();
-      setFeedbacks(data);
-    } catch (error) {
-      Alert.alert('Erro', 'Não foi possível carregar os feedbacks.');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmitFeedback = async () => {
-    if (!user) {
-      Alert.alert('Erro', 'Você precisa estar logado para enviar um feedback.');
-      return;
-    }
-
-    if (rating === 0) {
-      Alert.alert('Atenção', 'Por favor, selecione uma avaliação.');
-      return;
-    }
-
-    if (!comment.trim()) {
-      Alert.alert('Atenção', 'Por favor, escreva um comentário.');
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      await feedbackService.createFeedback(user.id, user.name, rating, comment);
-      
-      Alert.alert('Sucesso', 'Seu feedback foi enviado com sucesso!');
-      setModalVisible(false);
-      setRating(0);
-      setComment('');
-      loadFeedbacks(); // Recarrega a lista
-    } catch (error) {
-      Alert.alert('Erro', error.message || 'Não foi possível enviar o feedback.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <AppHeader navigation={navigation} />
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2e2e2e" />
-          <Text style={styles.loadingText}>Carregando feedbacks...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={feedbacks}
-          renderItem={({ item }) => <FeedbackCard item={item} />}
-          keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={
-            <Text style={styles.pageTitle}>Feedback dos clientes</Text>
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="chatbox-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>Nenhum feedback ainda.</Text>
-              <Text style={styles.emptySubtext}>Seja o primeiro a avaliar!</Text>
-            </View>
-          }
-          contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
-          refreshing={loading}
-          onRefresh={loadFeedbacks}
-        />
-      )}
+      <FlatList
+        data={feedbacks}
+        renderItem={({ item }) => <FeedbackCard item={item} />}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <Text style={styles.pageTitle}>Feedback dos clientes</Text>
+        }
+        contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
+      />
 
-      <TouchableOpacity 
-        style={styles.floatingButton} 
-        activeOpacity={0.8}
-        onPress={() => setModalVisible(true)}
-      >
+      <TouchableOpacity style={styles.floatingButton} activeOpacity={0.8}>
         <Ionicons name="add" size={28} color="white" />
         <Text style={styles.floatingButtonText}>Enviar meu feedback</Text>
       </TouchableOpacity>
-
-      {/* Modal de Enviar Feedback */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Seu Feedback</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <Ionicons name="close" size={28} color="#333" />
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.modalLabel}>Como você avalia nosso serviço?</Text>
-              <StarRating rating={rating} onRatingChange={setRating} editable />
-
-              <Text style={styles.modalLabel}>Conte-nos sua experiência:</Text>
-              <TextInput
-                style={styles.textArea}
-                multiline
-                numberOfLines={6}
-                placeholder="Compartilhe sua opinião sobre o atendimento, ambiente, qualidade do serviço..."
-                placeholderTextColor="#999"
-                value={comment}
-                onChangeText={setComment}
-                maxLength={500}
-              />
-              <Text style={styles.charCount}>{comment.length}/500</Text>
-
-              <TouchableOpacity
-                style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
-                onPress={handleSubmitFeedback}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <>
-                    <Ionicons name="send" size={20} color="white" />
-                    <Text style={styles.submitButtonText}>Enviar Feedback</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -361,106 +193,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
-  },
-  // Estilos do Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    maxHeight: '85%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  modalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
-    marginTop: 10,
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-    paddingVertical: 10,
-  },
-  textArea: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 15,
-    padding: 15,
-    fontSize: 15,
-    borderColor: '#E0E0E0',
-    borderWidth: 1,
-    minHeight: 120,
-    textAlignVertical: 'top',
-    color: '#333',
-  },
-  charCount: {
-    textAlign: 'right',
-    color: '#999',
-    fontSize: 12,
-    marginTop: 5,
-    marginBottom: 20,
-  },
-  submitButton: {
-    backgroundColor: '#2e2e2e',
-    borderRadius: 25,
-    paddingVertical: 15,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#999',
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 15,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 5,
   },
 });
