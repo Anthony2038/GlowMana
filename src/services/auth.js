@@ -1,5 +1,7 @@
 import { Alert } from 'react-native';
-import { API_URL } from './apiConfig';
+
+// Use local network IP for mobile devices to access mock server
+const API_URL = typeof __DEV__ !== 'undefined' && __DEV__ ? 'http://192.168.0.156:3005' : 'https://example.com';
 
 async function request(path, body) {
   const res = await fetch(`${API_URL}${path}`, {
