@@ -9,8 +9,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Alert,
 } from 'react-native';
+import notificationsService from '../services/notifications';
 
 // Componente de Cabeçalho (padrão do app)
 const AppHeader = ({ navigation }) => (
@@ -89,7 +91,25 @@ export default function DetalhesPromocaoScreen({ route, navigation }) {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.agendarButton} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.agendarButton}
+          activeOpacity={0.8}
+          onPress={async () => {
+            try {
+              const payload = {
+                type: 'info',
+                text: `Novo agendamento: ${dadosPromocao.titulo} - pedido enviado pelo cliente.`,
+                date: new Date().toISOString(),
+                shopId: 1,
+              };
+              await notificationsService.createNotification(payload);
+              Alert.alert('Agendado', 'Seu pedido de agendamento foi enviado para a loja');
+              navigation.navigate('Agendamentos');
+            } catch (err) {
+              // já tratado no serviço
+            }
+          }}
+        >
           <Text style={styles.agendarButtonText}>Agendar</Text>
         </TouchableOpacity>
 
