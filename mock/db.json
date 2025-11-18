@@ -43,4 +43,21 @@
       "password": "kaio298"
     }
   ]
+  ,
+  "notifications": [
+    {
+      "id": 1,
+      "type": "info",
+      "text": "Seu agendamento do serviço 'Henna + HydroGloss' foi confirmado para 12/08/2025 às 15:00.",
+      "date": "2025-08-05T09:00:00.000Z",
+      "shopId": 1
+    },
+    {
+      "id": 2,
+      "type": "warning",
+      "text": "Agendamento reagendado: cliente mudou para 14/08/2025 às 11:00.",
+      "date": "2025-08-06T11:30:00.000Z",
+      "shopId": 1
+    }
+  ]
 }

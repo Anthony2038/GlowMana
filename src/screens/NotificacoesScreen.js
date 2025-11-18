@@ -9,19 +9,32 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
+import { useEffect, useState } from 'react';
+import notificationsService from '../services/notifications';
 
 export default function NotificacoesScreen({ navigation }) { // Adicionado { navigation }
-  // 🔹 Exemplo de notificações
-  const notifications = [
-    {
-      id: "1",
-      text:
-        'Seu agendamento do serviço “Henna + HydroGloss” foi confirmado com sucesso para o dia 12/08/2025 às 15:00 horas.',
-      date: "05/08/2025, 09:00",
-    },
-    // ... (outras notificações)
-  ];
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    try {
+      setLoading(true);
+      // exemplo: buscar notificações da loja com shopId=1
+      const data = await notificationsService.fetchNotifications('?shopId=1&_sort=date&_order=desc');
+      setNotifications(data || []);
+    } catch (err) {
+      // falha silenciosa por enquanto
+      setNotifications([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,12 +69,16 @@ export default function NotificacoesScreen({ navigation }) { // Adicionado { nav
       >
         <Text style={styles.title}>Notificações</Text>
 
-        {notifications.map((n) => (
-          <View key={n.id} style={styles.notificationCard}>
-            <Text style={styles.notificationText}>{n.text}</Text>
-            <Text style={styles.notificationDate}>{n.date}</Text>
-          </View>
-        ))}
+        {loading ? (
+          <ActivityIndicator size="large" color="#2e2e2e" />
+        ) : (
+          notifications.map((n) => (
+            <View key={n.id} style={styles.notificationCard}>
+              <Text style={styles.notificationText}>{n.text}</Text>
+              <Text style={styles.notificationDate}>{new Date(n.date).toLocaleString()}</Text>
+            </View>
+          ))
+        )}
 
         <View style={{ height: 60 }} />
       </ScrollView>
