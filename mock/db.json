@@ -1,4 +1,14 @@
 {
+  "storeAdmins": [
+    {
+      "id": 1,
+      "name": "Administrador GlowMana",
+      "email": "admin@glowmana.com",
+      "password": "admin123",
+      "role": "admin",
+      "storeName": "GlowMana Salão"
+    }
+  ],
   "users": [
     {
       "id": 1,
@@ -32,15 +42,151 @@
     },
     {
       "id": 6,
-      "name": "kaio",
+      "name": "kmv",
       "email": "kaiomarciosol@gmail.com",
-      "password": "kaio2918"
+      "password": "kaio2918",
+      "phone": "",
+      "birthDate": "",
+      "address": "",
+      "profileImage": "file:///data/user/0/host.exp.exponent/cache/ImagePicker/51d27680-75a3-4153-8f91-d6588bd16365.jpeg",
+      "notifications": true,
+      "promotions": true
     },
     {
       "id": 7,
       "name": "kaio",
       "email": "fffeliz@hotmail.com",
       "password": "kaio298"
+    },
+    {
+      "id": 8,
+      "name": "Teste User",
+      "email": "teste@teste.com",
+      "password": "senha123"
+    },
+    {
+      "id": 9,
+      "name": "Teste Novo",
+      "email": "novoemail@teste.com",
+      "password": "senha123"
+    },
+    {
+      "id": 10,
+      "name": "Usuario Teste",
+      "email": "usuario@teste.com",
+      "password": "senha123"
+    },
+    {
+      "id": 11,
+      "name": "kaiooooo",
+      "email": "1kaiomarciosol@gmail.com",
+      "password": "123456"
+    },
+    {
+      "id": 12,
+      "name": "qqqqqq",
+      "email": "novo+{hhmm}@teste.com",
+      "password": "123456"
+    },
+    {
+      "id": 13,
+      "name": "lucas",
+      "email": "luam2@gmail.com",
+      "password": "123456"
+    },
+    {
+      "id": 14,
+      "name": "rob",
+      "email": "roberto@hotmail.com",
+      "password": "123456"
+    },
+    {
+      "id": 15,
+      "name": "marcio",
+      "email": "marciokaio694@gmail.com",
+      "password": "123456"
+    }
+  ],
+  "feedbacks": [
+    {
+      "id": 1,
+      "userId": 1,
+      "nome": "Fulana Da Silva",
+      "rating": 5,
+      "data": "05/07/2025",
+      "comentario": "Amei o atendimento! Profissionalismo e delicadeza. Com certeza voltarei mais vezes."
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "nome": "Carla Nascimento",
+      "rating": 4,
+      "data": "11/07/2025",
+      "comentario": "Ambiente super agradável e minha sobrancelha ficou perfeita! Obrigada, GlowMana."
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "nome": "Bianca Rocha",
+      "rating": 5,
+      "data": "19/07/2025",
+      "comentario": "Marquei unhas e cabelo e fiquei encantada com o resultado. Atendimento excelente!"
+    },
+    {
+      "userId": 6,
+      "nome": "kmv",
+      "rating": 5,
+      "comentario": "yiu",
+      "data": "16/11/2025",
+      "id": 4
+    },
+    {
+      "userId": 6,
+      "nome": "kmv",
+      "rating": 5,
+      "comentario": "hgff",
+      "data": "16/11/2025",
+      "id": 5
+    },
+    {
+      "userId": 6,
+      "nome": "kmv",
+      "rating": 5,
+      "comentario": "sdfsdf",
+      "data": "17/11/2025",
+      "id": 6
+    },
+    {
+      "userId": 6,
+      "nome": "kmv",
+      "rating": 2,
+      "comentario": "awdsedgedrf t",
+      "data": "20/11/2025",
+      "id": 7
+    },
+    {
+      "userId": 6,
+      "nome": "kmv",
+      "rating": 5,
+      "comentario": "oi",
+      "data": "20/11/2025",
+      "id": 8
+    },
+    {
+      "userId": 13,
+      "nome": "lucas",
+      "rating": 5,
+      "comentario": "'2312312312",
+      "data": "21/11/2025",
+      "id": 9
+    },
+    {
+      "userId": 6,
+      "nome": "kmv",
+      "rating": 5,
+      "comentario": "Ta funcionando ",
+      "data": "21/11/2025",
+      "id": 10
     }
   ]
 }

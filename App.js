@@ -123,7 +123,6 @@ const Stack = createStackNavigator();
 
 function App() {
   return (
-    // Removido o <NavigationContainer> daqui, pois o Expo Router cuida disso
     <AuthProvider>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
       {/* Telas de Autenticação (Cliente e Loja) */}

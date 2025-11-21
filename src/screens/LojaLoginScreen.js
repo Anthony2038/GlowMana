@@ -1,11 +1,61 @@
 // src/screens/LojaLoginScreen.js
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { ImageBackground, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import CustomButton from '../components/CustomButton'; // Reutilizando seu botão
+import React, { useState } from 'react';
+import { ImageBackground, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator, Platform } from 'react-native';
+import CustomButton from '../components/CustomButton';
+
+const API_URL = Platform.OS === 'web' ? 'http://localhost:3001' : 'http://192.168.0.156:3001';
 
 export default function LojaLoginScreen({ navigation }) {
-  const [secureSenha, setSecureSenha] = React.useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [secureSenha, setSecureSenha] = useState(true);
+
+  const handleLogin = async () => {
+    console.log('=== LOGIN LOJA CLICADO ===');
+    
+    const sanitized = { email: email.trim().toLowerCase(), password };
+    
+    if (!sanitized.email || !sanitized.password) {
+      Alert.alert('Erro', 'Preencha e-mail e senha.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('🏪 Fazendo login de administrador...');
+      const response = await fetch(`${API_URL}/auth/store-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sanitized),
+      });
+
+      const data = await response.json();
+      console.log('📊 Resposta:', data);
+
+      if (!response.ok) {
+        const message = response.status === 401 
+          ? 'E-mail ou senha incorretos.'
+          : data.message || 'Erro ao fazer login.';
+        Alert.alert('Erro no Login', message);
+        return;
+      }
+
+      if (data && data.token) {
+        console.log('🎉 Login de admin bem-sucedido!');
+        Alert.alert('Sucesso', `Bem-vindo, ${data.user.name}!`);
+        navigation.navigate('LojaApp');
+      } else {
+        Alert.alert('Erro', 'Resposta inválida do servidor.');
+      }
+    } catch (error) {
+      console.error('❌ Erro no login da loja:', error);
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ImageBackground
@@ -23,6 +73,9 @@ export default function LojaLoginScreen({ navigation }) {
                 style={styles.input}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                editable={!loading}
             />
 
             <Text style={styles.label}>Senha</Text>
@@ -30,6 +83,9 @@ export default function LojaLoginScreen({ navigation }) {
                 <TextInput
                     style={styles.inputPassword}
                     secureTextEntry={secureSenha}
+                    value={password}
+                    onChangeText={setPassword}
+                    editable={!loading}
                 />
                 <TouchableOpacity onPress={() => setSecureSenha(!secureSenha)}>
                     <Ionicons 
@@ -47,10 +103,12 @@ export default function LojaLoginScreen({ navigation }) {
 
             <View style={{marginTop: 30, width: '100%'}}>
               <CustomButton
-                  title="Entrar"
-                  onPress={() => navigation.navigate('LojaApp')} // Navega para o App da Loja
+                  title={loading ? "Entrando..." : "Entrar"}
+                  onPress={handleLogin}
                   type="secondary"
+                  disabled={loading}
               />
+              {loading && <ActivityIndicator size="small" color="#000" style={{marginTop: 10}} />}
             </View>
         </View>
     </ImageBackground>

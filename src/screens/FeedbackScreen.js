@@ -1,15 +1,21 @@
 // src/screens/FeedbackScreen.js
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   FlatList,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  View
+  View,
+  Modal,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
 
 // Componente de Cabeçalho (padrão do app)
 const AppHeader = ({ navigation }) => (
@@ -30,30 +36,7 @@ const AppHeader = ({ navigation }) => (
   </LinearGradient>
 );
 
-// Dados de exemplo
-const feedbacks = [
-  {
-    id: '1',
-    nome: 'Fulana Da Silva',
-    rating: 5,
-    data: '05/07/2025',
-    comentario: 'Amei o atendimento! Profissionalismo e delicadeza. Com certeza voltarei mais vezes.',
-  },
-  {
-    id: '2',
-    nome: 'Carla Nascimento',
-    rating: 4,
-    data: '11/07/2025',
-    comentario: 'Ambiente super agradável e minha sobrancelha ficou perfeita! Obrigada, GlowMana.',
-  },
-  {
-    id: '3',
-    nome: 'Bianca Rocha',
-    rating: 5,
-    data: '19/07/2025',
-    comentario: 'Marquei unhas e cabelo e fiquei encantada com o resultado. Atendimento excelente!',
-  },
-];
+const API_URL = typeof __DEV__ !== 'undefined' && __DEV__ ? 'http://192.168.0.156:3001' : 'https://example.com';
 
 // Componente do Card de Feedback
 const FeedbackCard = ({ item }) => (
@@ -72,25 +55,146 @@ const FeedbackCard = ({ item }) => (
 );
 
 export default function FeedbackScreen({ navigation }) {
+  const { user, token } = useContext(AuthContext);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comentario, setComentario] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    loadFeedbacks();
+  }, []);
+
+  const loadFeedbacks = async () => {
+    try {
+      const res = await fetch(`${API_URL}/feedbacks`);
+      const data = await res.json();
+      setFeedbacks(data);
+    } catch (e) {
+      Alert.alert('Erro', 'Falha ao carregar feedbacks.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!comentario.trim()) {
+      Alert.alert('Erro', 'Digite um comentário.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/feedbacks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          nome: user?.name || 'Anônimo',
+          rating,
+          comentario,
+          data: new Date().toLocaleDateString('pt-BR'),
+        }),
+      });
+      if (!res.ok) throw new Error('Falha ao enviar');
+      Alert.alert('Sucesso', 'Feedback enviado!');
+      setModalVisible(false);
+      setComentario('');
+      setRating(5);
+      loadFeedbacks();
+    } catch (e) {
+      Alert.alert('Erro', e.message || 'Falha ao enviar feedback.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <AppHeader navigation={navigation} />
 
-      <FlatList
-        data={feedbacks}
-        renderItem={({ item }) => <FeedbackCard item={item} />}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <Text style={styles.pageTitle}>Feedback dos clientes</Text>
-        }
-        contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      ) : (
+        <FlatList
+          data={feedbacks}
+          renderItem={({ item }) => <FeedbackCard item={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          ListHeaderComponent={
+            <Text style={styles.pageTitle}>Feedback dos clientes</Text>
+          }
+          contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
+        />
+      )}
 
-      <TouchableOpacity style={styles.floatingButton} activeOpacity={0.8}>
+      <TouchableOpacity 
+        style={styles.floatingButton} 
+        activeOpacity={0.8}
+        onPress={() => setModalVisible(true)}
+      >
         <Ionicons name="add" size={28} color="white" />
         <Text style={styles.floatingButtonText}>Enviar meu feedback</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Seu Feedback</Text>
+            
+            <Text style={styles.modalLabel}>Avaliação</Text>
+            <View style={styles.starsContainer}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                  <Ionicons
+                    name={star <= rating ? 'star' : 'star-outline'}
+                    size={40}
+                    color="#FFD700"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.modalLabel}>Comentário</Text>
+            <TextInput
+              style={styles.textArea}
+              multiline
+              numberOfLines={4}
+              value={comentario}
+              onChangeText={setComentario}
+              placeholder="Conte sua experiência..."
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.submitButton]}
+                onPress={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Enviar</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -172,7 +276,7 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     position: 'absolute',
-    bottom: 20, // Ajuste para ficar acima da TabBar
+    bottom: 80, // Aumentado para ficar bem acima da TabBar
     left: '50%',
     marginLeft: -110, // Metade da largura
     width: 220,
@@ -187,11 +291,81 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 8,
+    zIndex: 999, // Garantir que fique no topo
   },
   floatingButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 25,
+    width: '90%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    gap: 10,
+  },
+  textArea: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 15,
+    padding: 15,
+    fontSize: 16,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
+    marginBottom: 20,
+    textAlignVertical: 'top',
+    minHeight: 100,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 30,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#E0E0E0',
+  },
+  cancelButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  submitButton: {
+    backgroundColor: '#000',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

@@ -11,14 +11,17 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const validate = () => {
+  const validate = (vals) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
+    const e = (vals?.email ?? email).trim().toLowerCase();
+    const p = vals?.password ?? password;
+    if (!e || !emailRegex.test(e)) {
       Alert.alert('Erro', 'Informe um e-mail válido.');
       return false;
     }
-    if (!password || password.length < 6) {
+    if (!p || p.length < 6) {
       Alert.alert('Erro', 'A senha deve ter ao menos 6 caracteres.');
       return false;
     }
@@ -28,16 +31,37 @@ const LoginScreen = ({ navigation }) => {
   const { signIn } = useContext(AuthContext);
 
   const handleLogin = async () => {
-    if (!validate()) return;
+    console.log('=== ENTRAR CLICADO ===');
+    const sanitized = { email: email.trim().toLowerCase(), password };
+    console.log('Email (sanitizado):', sanitized.email);
+    console.log('Senha length:', sanitized.password.length);
+    if (!validate(sanitized)) {
+      console.log('❌ Validação falhou');
+      return;
+    }
+    console.log('✅ Validação passou, iniciando login...');
     setLoading(true);
     try {
-      const data = await signIn(email, password);
+      const data = await signIn(sanitized.email, sanitized.password);
+      console.log('📊 Dados retornados do signIn:', data);
+      
       if (data && data.token) {
+        console.log('🎉 Login bem-sucedido! Navegando para MainApp...');
         navigation.navigate('MainApp');
+      } else {
+        console.warn('⚠️ Login sem token');
+        Alert.alert('Erro', 'Resposta inválida do servidor.');
       }
     } catch (error) {
-      Alert.alert('Erro', error.message || 'Falha ao autenticar.');
+      console.error('❌ Erro no login:', error);
+      console.error('Stack:', error.stack);
+      console.error('Status:', error?.status);
+      const message = error?.status === 401 
+        ? 'E-mail ou senha incorretos.'
+        : (error?.message || 'Falha ao autenticar. Verifique sua conexão.');
+      Alert.alert('Erro no Login', message);
     } finally {
+      console.log('🏁 Finalizando login...');
       setLoading(false);
     }
   };
@@ -65,13 +89,14 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.label}>Senha</Text>
             <View style={styles.passwordContainer}>
                 <TextInput
-                    style={styles.inputPassword}
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
+                  style={styles.inputPassword}
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Digite sua senha"
                 />
-                <TouchableOpacity style={styles.eyeIcon}>
-                    <Ionicons name="eye-outline" size={24} color="#888" />
+                <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={24} color="#888" />
                 </TouchableOpacity>
             </View>
 
